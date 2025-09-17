@@ -1,11 +1,10 @@
+import { ArchitectureSection } from "./ArchitectureSection";
 import { CommandCenterSection } from "./CommandCenterSection";
 import { CommunitySection } from "./CommunitySection";
 import { CtaButtons } from "./CtaButtons";
 import { CtaSection } from "./CtaSection";
 import { FeaturesGrid } from "./FeaturesGrid";
 import { PerformanceSection } from "./PerformanceSection";
-import { PowerfulPrimitivesSection } from "./PowerfulPrimitivesSection";
-import { RivetCloudSection } from "./RivetCloudSection";
 import { ServerlessLimitationsSection } from "./ServerlessLimitationsSection";
 
 export default function IndexPage() {
@@ -22,13 +21,12 @@ export default function IndexPage() {
 			<main className="min-h-screen w-full max-w-[1500px] mx-auto px-4 md:px-8">
 				<Hero />
 				<FeaturesGrid />
-				<PowerfulPrimitivesSection />
+				<ArchitectureSection />
 				<ServerlessLimitationsSection />
 				<PerformanceSection />
 				{/*<FrameworksSection />*/}
 				{/*<TutorialsSection />*/}
 				<CommandCenterSection />
-				<RivetCloudSection />
 				<CommunitySection />
 				<CtaSection />
 			</main>
@@ -74,23 +72,17 @@ const Hero = () => {
 					{/* Title */}
 					<div className="space-y-6 text-center sm:text-left">
 						<h1 className="text-4xl sm:text-5xl md:text-6xl font-700 text-white leading-[1.3] sm:leading-[1.1] tracking-normal">
-							The open-source serverless cloud
+							Scale your Rivet engine & actors on Rivet Cloud
 						</h1>
 						<p className="text-lg sm:text-xl leading-[1.2] tracking-tight font-500 text-white/40 max-w-lg mx-auto sm:mx-0">
-							Easily deploy & scale{" "}
-							<span className="text-white/90">AI agents</span>,{" "}
+							Built on{" "}
+							<span className="text-white/90">FoundationDB</span> for{" "}
 							<span className="text-white/90">
-								complex workloads
-							</span>
-							, and{" "}
-							<span className="text-white/90">backends</span> —
-							all on a frictionless cloud.
-							{/*<span className="text-white/80">
-								Open-source
-							</span> &{" "}
-							<span className="text-white/80">
-								self-hostable
-							</span>.*/}
+								enterprise-scale
+							</span>{" "}
+							actor orchestration. Connect to your applications on{" "}
+							<span className="text-white/90">Railway</span>,{" "}
+							<span className="text-white/90">Vercel</span>, and other platforms.
 						</p>
 					</div>
 
