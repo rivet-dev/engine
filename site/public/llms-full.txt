@@ -4036,6 +4036,132 @@ The Rivet Rust client provides a way to connect to and interact with actors from
 _Coming Soon_
 
 For detailed API documentation, please refer to the [RivetKit Rust client implementation](https://github.com/rivet-gg/rivetkit/blob/main/clients/rust).
+## FreeStyle
+
+# FreeStyle
+
+Deploy Rivet Actors to FreeStyle.sh for AI-powered code execution and management with built-in security and scalability.
+
+FreeStyle.sh is a cloud platform designed for managing AI-generated code as well as code you didn't write yourself. It provides a set of APIs and tools to help you run, deploy, store, and manage code at different parts of its lifecycle, especially code generated or modified by AI. The platform supports handling challenges unique to managing untrusted or third-party code, offering scalable and debuggable infrastructure for AI app builders, workflow engines, AI software engineers, and AI agents.
+
+## Feature Support
+
+| Feature | Supported |
+| --- | --- |
+| Horizontal scaling | Yes |
+| WebSockets | Yes |
+| SSE | Yes |
+| Edge | Yes |
+| Scheduling | Yes |
+| AI Code Management | Yes |
+
+## Setup
+
+Install RivetKit and create your registry:
+
+```bash
+npm install rivetkit
+```
+
+Create a namespace on Rivet Cloud to manage your FreeStyle actors. This will be used to isolate your actors and manage permissions.
+
+Update your server code to use the serverless engine driver:
+
+```typescript }
+registry.startServerless(),
+	inspector: ,
+});
+
+// FreeStyle uses Deno under the hood for web deployments
+// @ts-ignore
+Deno.serve(app.fetch);
+```
+
+**Configuration Requirements:**
+
+- `endpoint` - Rivet API endpoint (use "api.rivet.gg" for Rivet Cloud)
+- `namespace` - Your Rivet namespace for actor isolation
+- `inspector.enabled` - Enable debugging and monitoring
+
+Deploy your application to FreeStyle with the correct configuration:
+
+```typescript
+const res = await freestyle.deployWeb(buildDir, );
+```
+
+**Deployment Configuration:**
+
+- `timeout: 120` - Set timeout to 120 seconds for actor operations
+- `entrypoint: "server.ts"` - Entry point file with your serverless setup
+- `domains` - Your FreeStyle domain(s)
+- `build: false` - Disable build if you're pre-building your assets
+
+Update the runner configuration on the Rivet side to connect with your FreeStyle deployment:
+
+```typescript
+const rivet = new RivetClient();
+
+await rivet.runnerConfigs.upsert(process.env.RIVET_RUNNER_NAME, /start`,
+		runnersMargin: 1,
+		minRunners: 1,
+		maxRunners: 1,
+		slotsPerRunner: 1,
+		requestLifespan: 110,
+	},
+	namespace: process.env.RIVET_NAMESPACE_NAME,
+});
+```
+
+**Runner Configuration:**
+
+- `url` - FreeStyle deployment URL with `/start` endpoint
+- `runnersMargin` - Buffer of runners to maintain
+- `minRunners/maxRunners` - Scaling limits
+- `slotsPerRunner` - Concurrent actors per runner
+- `requestLifespan` - Request timeout (slightly less than FreeStyle timeout)
+
+## Examples
+
+Complete example of deploying Rivet actors to FreeStyle.sh.
+
+FreeStyle provides built-in security for running untrusted AI-generated code, making it ideal for AI agent applications and workflow engines.
+
+## Advanced
+
+### Environment Variables
+
+Set up the following environment variables for your FreeStyle deployment:
+
+```bash
+# Rivet configuration
+RIVET_NAMESPACE_NAME=your-namespace
+RIVET_RUNNER_NAME=freestyle-runner
+RIVET_API_TOKEN=your-api-token
+
+# FreeStyle configuration
+FREESTYLE_DOMAIN=your-app.freestyle.sh
+```
+
+### AI Code Security
+
+FreeStyle provides additional security features for AI-generated code:
+
+- **Sandboxed execution** - Code runs in isolated environments
+- **Resource limits** - CPU, memory, and network restrictions
+- **Code analysis** - Static analysis of uploaded code
+- **Runtime monitoring** - Real-time security monitoring
+
+### Debugging
+
+Enable the inspector for debugging your actors:
+
+```typescript
+registry.startServerless(,
+	// ... other options
+});
+```
+
+Access the inspector at your FreeStyle domain with the debug port.
 ## Build Your Own
 
 # Build Your Own
