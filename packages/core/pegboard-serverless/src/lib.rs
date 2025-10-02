@@ -234,6 +234,16 @@ async fn outbound_handler(
 	draining: Arc<AtomicBool>,
 ) -> Result<()> {
 	let client = rivet_pools::reqwest::client_no_timeout().await?;
+
+	let token = if let Some(auth) = &ctx.config().auth {
+		Some((
+			X_RIVET_TOKEN,
+			HeaderValue::try_from(auth.admin_token.read())?,
+		))
+	} else {
+		None
+	};
+
 	let headers = headers
 		.into_iter()
 		.flat_map(|(k, v)| {
@@ -247,19 +257,7 @@ async fn outbound_handler(
 			X_RIVETKIT_TOTAL_SLOTS,
 			HeaderValue::try_from(slots_per_runner)?,
 		)))
-		// Add token if auth is enabled
-		.chain(
-			ctx.config()
-				.auth
-				.as_ref()
-				.map(|auth| {
-					anyhow::Ok((
-						X_RIVET_TOKEN,
-						HeaderValue::try_from(auth.admin_token.read())?,
-					))
-				})
-				.transpose()?,
-		)
+		.chain(token)
 		.collect();
 
 	let mut req = client.get(url).headers(headers);
