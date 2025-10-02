@@ -597,6 +597,7 @@ pub async fn clear_pending_allocation(
 
 			Ok(exists)
 		})
+		.custom_instrument(tracing::info_span!("actor_clear_pending_alloc_tx"))
 		.await?;
 
 	Ok(cleared)
@@ -637,6 +638,7 @@ pub async fn set_started(ctx: &ActivityCtx, input: &SetStartedInput) -> Result<(
 
 			Ok(())
 		})
+		.custom_instrument(tracing::info_span!("actor_set_started_tx"))
 		.await?;
 
 	Ok(())
@@ -666,6 +668,7 @@ pub async fn set_sleeping(ctx: &ActivityCtx, input: &SetSleepingInput) -> Result
 
 			Ok(())
 		})
+		.custom_instrument(tracing::info_span!("actor_set_sleeping_tx"))
 		.await?;
 
 	Ok(())
