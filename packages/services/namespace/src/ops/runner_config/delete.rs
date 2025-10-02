@@ -37,7 +37,7 @@ pub async fn namespace_runner_config_delete(ctx: &OperationCtx, input: &Input) -
 
 			Ok(())
 		})
-		.custom_instrument(tracing::info_span!("runner_config_upsert_tx"))
+		.custom_instrument(tracing::info_span!("runner_config_delete_tx"))
 		.await?;
 
 	// Purge cache in all dcs
