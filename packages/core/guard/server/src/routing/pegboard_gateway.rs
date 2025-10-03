@@ -150,7 +150,7 @@ async fn find_actor(
 					destroyed,
 				}))
 			})
-			.custom_instrument(tracing::info_span!("actor_exists_tx")),
+			.custom_instrument(tracing::info_span!("find_actor_tx")),
 	)
 	.await??;
 

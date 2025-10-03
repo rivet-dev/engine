@@ -497,6 +497,7 @@ async fn init(ctx: &ActivityCtx, input: &InitInput) -> Result<InitOutput> {
 
 			Ok(evict_workflow_id)
 		})
+		.custom_instrument(tracing::info_span!("runner_init_tx"))
 		.await?;
 
 	Ok(InitOutput { evict_workflow_id })
@@ -717,6 +718,7 @@ async fn clear_db(ctx: &ActivityCtx, input: &ClearDbInput) -> Result<()> {
 
 			Ok(())
 		})
+		.custom_instrument(tracing::info_span!("runner_clear_tx"))
 		.await?;
 
 	// Does not clear the data keys like last ping ts, just the allocation idx
