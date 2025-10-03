@@ -113,7 +113,9 @@ pub struct UpsertPath {
 #[derive(Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[schema(as = RunnerConfigsUpsertRequest)]
-pub struct UpsertRequest(#[schema(inline)] rivet_types::namespaces::RunnerConfig);
+pub struct UpsertRequest(
+	#[schema(inline)] rivet_api_types::namespaces::runner_configs::RunnerConfig,
+);
 
 #[derive(Deserialize, Serialize, ToSchema)]
 #[schema(as = RunnerConfigsUpsertResponse)]
@@ -135,7 +137,25 @@ pub async fn upsert(
 	ctx.op(namespace::ops::runner_config::upsert::Input {
 		namespace_id: namespace.namespace_id,
 		name: path.runner_name,
-		config: body.0,
+		config: match body.0 {
+			rivet_api_types::namespaces::runner_configs::RunnerConfig::Serverless {
+				url,
+				headers,
+				request_lifespan,
+				slots_per_runner,
+				min_runners,
+				max_runners,
+				runners_margin,
+			} => rivet_types::namespaces::RunnerConfig::Serverless {
+				url,
+				headers: headers.unwrap_or_default(),
+				request_lifespan,
+				slots_per_runner,
+				min_runners: min_runners.unwrap_or_default(),
+				max_runners,
+				runners_margin: runners_margin.unwrap_or_default(),
+			},
+		},
 	})
 	.await?;
 
