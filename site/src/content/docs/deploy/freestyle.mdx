@@ -1,0 +1,150 @@
+# FreeStyle
+
+Deploy Rivet Actors to [FreeStyle.sh](https://docs.freestyle.sh/), a cloud platform for running AI-generated code with built-in security and scalability.
+
+## Setup
+
+<Steps>
+<Step title="Install packages">
+
+Install RivetKit and create your registry:
+
+```bash
+npm install rivetkit
+```
+
+</Step>
+
+<Step title="Create namespace">
+
+Create a namespace on Rivet Cloud to manage your FreeStyle actors. This will be used to isolate your actors and manage permissions.
+
+</Step>
+
+<Step title="Configure serverless driver">
+
+Update your server code to use the serverless engine driver:
+
+```typescript {{"title":"server.ts"}}
+import { registry } from "./registry";
+import { createEngineDriver } from "rivetkit/engine";
+
+registry.startServerless({
+	driver: createEngineDriver({
+		endpoint: "api.rivet.gg",
+		// For self-hosted instances:
+		// endpoint: "http://127.0.0.1:6420",
+		runnerName: "freestyle-runner",
+		namespace: process.env.RIVET_NAMESPACE_NAME,
+	}),
+	inspector: {
+		enabled: true,
+	},
+});
+
+// FreeStyle uses Deno under the hood for web deployments
+// @ts-ignore
+Deno.serve(app.fetch);
+```
+
+**Configuration Requirements:**
+
+- `endpoint` - Rivet API endpoint (use "api.rivet.gg" for Rivet Cloud)
+- `namespace` - Your Rivet namespace for actor isolation
+- `inspector.enabled` - Enable debugging and monitoring
+
+</Step>
+
+<Step title="Deploy to FreeStyle">
+
+Deploy your application to FreeStyle with the correct configuration. Create a deployment script or add this to your existing deployment process:
+
+```typescript
+const res = await freestyle.deployWeb(buildDir, {
+	timeout: 120, // Increases max request lifetime on the runner
+	entrypoint: "server.ts", // File which starts serverless runner
+	domains: [process.env.FREESTYLE_DOMAIN],
+	build: false,
+});
+```
+
+It's important to keep `timeout` set to `120`. Details on `buildDir` and other settings are available on [FreeStyle docs](https://docs.freestyle.sh/web/web).
+
+Run this deployment script to push your application to FreeStyle.
+
+**Deployment Configuration:**
+
+- `timeout: 120` - Set timeout to 120 seconds for actor operations
+- `entrypoint: "server.ts"` - Entry point file with your serverless setup
+- `domains` - Your FreeStyle domain(s)
+- `build: false` - Disable build if you're pre-building your assets
+
+</Step>
+
+<Step title="Configure runner">
+
+Update the runner configuration on the Rivet side to connect with your FreeStyle deployment. Create a configuration script and run it after your FreeStyle deployment is live:
+
+```typescript
+import { RivetClient } from "rivetkit";
+
+const rivet = new RivetClient({
+	endpoint: "api.rivet.gg",
+	token: process.env.RIVET_API_TOKEN,
+});
+
+await rivet.runnerConfigs.upsert(process.env.RIVET_RUNNER_NAME, {
+	serverless: {
+		url: `https://${process.env.FREESTYLE_DOMAIN}/start`,
+		runnersMargin: 1,
+		minRunners: 1,
+		maxRunners: 1,
+		slotsPerRunner: 1,
+		requestLifespan: 110,
+	},
+	namespace: process.env.RIVET_NAMESPACE_NAME,
+});
+```
+
+Execute this configuration script to register your FreeStyle deployment with Rivet.
+
+**Runner Configuration:**
+
+- `url` - FreeStyle deployment URL with `/start` endpoint
+- `runnersMargin` - Buffer of runners to maintain
+- `minRunners/maxRunners` - Scaling limits
+- `slotsPerRunner` - Concurrent actors per runner
+- `requestLifespan` - Request timeout (slightly less than FreeStyle timeout)
+
+</Step>
+</Steps>
+
+## Examples
+
+<CardGroup>
+<Card title="FreeStyle + Rivet" href="https://github.com/rivet-dev/rivetkit/tree/main/examples/freestyle" target="_blank">
+Complete example of deploying Rivet actors to FreeStyle.sh.
+</Card>
+</CardGroup>
+
+<Note>
+FreeStyle provides built-in security for running untrusted AI-generated code, making it ideal for AI agent applications and workflow engines.
+</Note>
+
+## Advanced
+
+### Debugging
+
+Enable the inspector for debugging your actors:
+
+```typescript
+registry.startServerless({
+	inspector: {
+		enabled: true
+	},
+	// ... other options
+});
+```
+
+Access the inspector on the Rivet cloud or Rivet instance.
+
