@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/).
 
+## [25.8.0](https://github.com/rivet-dev/engine/compare/v25.7.3...v25.8.0) (2025-10-04)
+
+
+### Features
+
+* cloud acl ([#3052](https://github.com/rivet-dev/engine/issues/3052)) ([3072ed6](https://github.com/rivet-dev/engine/commit/3072ed6307b187d8f8802250b1992082c4f488dc))
+* **cloud:** runners ([#3066](https://github.com/rivet-dev/engine/issues/3066)) ([8a4930f](https://github.com/rivet-dev/engine/commit/8a4930feaf4dcf71e44542e80beeeb6a7965f3a3))
+
+
+### Bug Fixes
+
+* **cloud:** redirect to tasks when initial login ([#3064](https://github.com/rivet-dev/engine/issues/3064)) ([f81012a](https://github.com/rivet-dev/engine/commit/f81012a2b6c762243171d825a899eab9f1e3efe0))
+
+
+### Chores
+
+* weekly changelog ([#3069](https://github.com/rivet-dev/engine/issues/3069)) ([e410867](https://github.com/rivet-dev/engine/commit/e4108679ddfcef9f8945ad96bfe804853071fe97))
+
 ## [25.7.3](https://github.com/rivet-dev/engine/compare/v25.7.2...v25.7.3) (2025-10-02)
 
 
