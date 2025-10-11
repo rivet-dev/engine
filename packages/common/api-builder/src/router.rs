@@ -77,9 +77,7 @@ pub async fn create_router(
 /// Health check endpoint
 pub async fn health_check() -> impl IntoResponse {
 	Json(json!({
-		"status": "ok",
-		"runtime": "engine",
-		"version": env!("CARGO_PKG_VERSION")
+		"status": "ok"
 	}))
 }
 
