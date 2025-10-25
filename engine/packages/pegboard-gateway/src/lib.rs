@@ -5,6 +5,7 @@ use futures_util::TryStreamExt;
 use gas::prelude::*;
 use http_body_util::{BodyExt, Full};
 use hyper::{Request, Response, StatusCode, header::HeaderName};
+use rivet_error::*;
 use rivet_guard_core::{
 	WebSocketHandle,
 	custom_serve::CustomServeTrait,
@@ -24,6 +25,16 @@ pub mod shared_state;
 const TUNNEL_ACK_TIMEOUT: Duration = Duration::from_secs(2);
 const SEC_WEBSOCKET_PROTOCOL: HeaderName = HeaderName::from_static("sec-websocket-protocol");
 const WS_PROTOCOL_ACTOR: &str = "rivet_actor.";
+
+#[derive(RivetError, Serialize, Deserialize)]
+#[error(
+	"guard",
+	"websocket_pending_limit_reached",
+	"Reached limit on pending websocket messages, aborting connection."
+)]
+pub struct WebsocketPendingLimitReached {
+	limit: usize,
+}
 
 pub struct PegboardGateway {
 	shared_state: SharedState,
@@ -86,9 +97,10 @@ impl CustomServeTrait for PegboardGateway {
 			pegboard::pubsub_subjects::RunnerReceiverSubject::new(self.runner_id).to_string();
 
 		// Start listening for request responses
-		let (request_id, mut msg_rx) = self
+		let request_id = Uuid::new_v4().into_bytes();
+		let mut msg_rx = self
 			.shared_state
-			.start_in_flight_request(tunnel_subject)
+			.start_in_flight_request(tunnel_subject, request_id)
 			.await;
 
 		// Start request
@@ -165,6 +177,7 @@ impl CustomServeTrait for PegboardGateway {
 		headers: &hyper::HeaderMap,
 		path: &str,
 		_request_context: &mut RequestContext,
+		unique_request_id: Uuid,
 	) -> Result<()> {
 		// Extract actor ID from WebSocket protocol
 		let actor_id = headers
@@ -193,9 +206,10 @@ impl CustomServeTrait for PegboardGateway {
 			pegboard::pubsub_subjects::RunnerReceiverSubject::new(self.runner_id).to_string();
 
 		// Start listening for WebSocket messages
-		let (request_id, mut msg_rx) = self
+		let request_id = unique_request_id.into_bytes();
+		let mut msg_rx = self
 			.shared_state
-			.start_in_flight_request(tunnel_subject.clone())
+			.start_in_flight_request(tunnel_subject.clone(), request_id)
 			.await;
 
 		// Send WebSocket open message
@@ -251,8 +265,12 @@ impl CustomServeTrait for PegboardGateway {
 				WebSocketServiceUnavailable.build()
 			})??;
 
-		// Accept the WebSocket
-		let mut ws_rx = client_ws.accept().await?;
+		// Send reclaimed messages
+		self.shared_state
+			.send_reclaimed_messages(request_id)
+			.await?;
+
+		let ws_rx = client_ws.recv();
 
 		// Spawn task to forward messages from server to client
 		let mut server_to_client = tokio::spawn(
@@ -285,7 +303,7 @@ impl CustomServeTrait for PegboardGateway {
 					}
 				}
 
-				tracing::debug!("sub closed");
+				tracing::debug!("tunnel sub closed");
 
 				Err(WebSocketServiceUnavailable.build())
 			}
@@ -296,6 +314,8 @@ impl CustomServeTrait for PegboardGateway {
 		let shared_state_clone = self.shared_state.clone();
 		let mut client_to_server = tokio::spawn(
 			async move {
+				let mut ws_rx = ws_rx.lock().await;
+
 				while let Some(msg) = ws_rx.try_next().await? {
 					match msg {
 						Message::Binary(data) => {
